@@ -1,0 +1,7 @@
+id,timestamp,feedback_text,user_id
+1,2025-06-08T10:00:00Z,"The new dashboard is amazing! So much easier to navigate.",user_123
+2,2025-06-08T10:05:00Z,"I had some trouble finding the login button. Maybe make it bigger?",user_456
+3,22025-06-08T11:20:00Z,"Love the Dark Mode feature, my eyes are thanking you! Great work.",user_789
+4,2025-06-08T12:15:00Z,"Why did you change the export function? The old one was better. It's confusing now.",user_123
+5,2025-06-08T13:00:00Z,,user_999
+6,2025-06-08T14:00:00Z,"THE APP KEEPS CRASHING when I try to upload a file. Please fix this!!",user_456
