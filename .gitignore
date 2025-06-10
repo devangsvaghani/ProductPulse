@@ -9,3 +9,7 @@ venv/
 backend/__pycache__/
 backend/.env
 backend/.venv
+
+worker/__pycache__/
+worker/.env
+worker/.venv

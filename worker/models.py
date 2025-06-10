@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Float, JSON, ForeignKey, func
-from sqlalchemy.orm import relationship, declarative_base
-
-# Define the Base class right here in the models file
-Base = declarative_base()
+from sqlalchemy.orm import relationship
+from database import Base
 
 class Upload(Base):
     __tablename__ = 'uploads'
@@ -17,8 +15,9 @@ class AnalysisResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String(255), nullable=False, index=True)
     summary = Column(Text)
-    sentiment = Column(String(50))
     sentiment_score = Column(Float)
-    roadmap_json = Column(JSON)
+    review_count = Column(Integer)
+    sentiment_details = Column(JSON)
+    
     upload_id = Column(Integer, ForeignKey('uploads.id'), nullable=False)
     upload = relationship("Upload", back_populates="results")
