@@ -1,0 +1,13 @@
+To Deploy docker image to AWS ECR (Amazon Elastic Container Registry)
+
+1. Go to Push Commands and run 1st command to login successfully.
+
+2. In the 2nd command add --platform linux/arm64
+    e.g., docker build --platform linux/arm64 -t {whatever is given}:latest .
+
+Note: arm64 because we built our lambda function in arm64.
+
+3. Paste 3rd & 4th command as it is 
+
+
+Finally Go to AWS Lambda and deploy Image 
