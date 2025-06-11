@@ -1,15 +1,16 @@
 .DS_Store
-
 .env
 *.env
+backend/.env
+worker/.env
 
 venv/
 .venv/
+backend/.venv/
+worker/.venv/
 
-backend/__pycache__/
-backend/.env
-backend/.venv
+__pycache__/
+*/__pycache__/
+*.py[cod]
 
-worker/__pycache__/
-worker/.env
-worker/.venv
+.vscode/
