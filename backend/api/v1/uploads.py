@@ -1,3 +1,4 @@
+from typing import List
 import boto3
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -32,6 +33,11 @@ def create_presigned_url(filename: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Could not generate presigned URL: {e}")
 
+@router.get("/", response_model=List[schemas.UploadResponse])
+def get_all_uploads(db: Session = Depends(get_db)):
+    # Retrieves a list of all uploads for the main dashboard view
+    all_uploads = db.query(models.Upload).order_by(models.Upload.created_at.desc()).all()
+    return all_uploads
 
 @router.get("/{upload_id}", response_model=schemas.UploadResponse)
 def get_upload_results(upload_id: int, db: Session = Depends(get_db)):
