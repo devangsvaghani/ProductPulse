@@ -11,3 +11,5 @@ Note: arm64 because we built our lambda function in arm64.
 
 
 Finally Go to AWS Lambda and deploy Image 
+
+Note: Make sure that csv file has one column named "Review Text"
