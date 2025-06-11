@@ -42,6 +42,14 @@ def lambda_handler(event, context):
         bucket_name = s3_record['s3']['bucket']['name']
         file_key = urllib.parse.unquote_plus(s3_record['s3']['object']['key'])
 
+        actual_filename = file_key
+        try:
+            user_id_str, actual_filename = file_key.split('/', 1)
+            user_id = int(user_id_str)
+        except (ValueError, IndexError):
+            print(f"ERROR: Could not parse user_id from S3 key: {file_key}")
+            continue
+
         print(f"Processing file: {file_key} from bucket: {bucket_name}")
 
         download_path = f'/tmp/{os.path.basename(file_key)}'
@@ -50,7 +58,7 @@ def lambda_handler(event, context):
         db = SessionLocal()
         upload_record = None
         try:
-            upload_record = Upload(filename=file_key, status='processing')
+            upload_record = Upload(filename=actual_filename, status='processing', user_id=user_id)
             db.add(upload_record)
             db.commit()
             db.refresh(upload_record)

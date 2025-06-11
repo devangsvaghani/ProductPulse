@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import { Link } from 'react-router-dom';
@@ -14,7 +15,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
     setStatus('uploading');
     try {
-      const presignedUrlResponse = await axios.post(`${API_URL}/api/v1/uploads/presigned-url?filename=${file.name}`);
+      const presignedUrlResponse = await api.post(`${API_URL}/api/v1/uploads/presigned-url?filename=${file.name}`);
       const { url, fields } = presignedUrlResponse.data;
 
       const formData = new FormData();
@@ -53,7 +54,7 @@ const UploadsListPage = () => {
     // Only set loading true on the first fetch
     if (uploads.length === 0) setIsLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/v1/uploads/`);
+      const response = await api.get(`${API_URL}/api/v1/uploads/`);
       setUploads(response.data);
     } catch (error) {
       console.error("Failed to fetch uploads", error);
@@ -62,11 +63,15 @@ const UploadsListPage = () => {
     }
   }, [uploads.length]);
 
-  useEffect(() => {
-    fetchUploads();
-    const intervalId = setInterval(fetchUploads, 5000); // Refresh list every 5 seconds
-    return () => clearInterval(intervalId);
-  }, [fetchUploads]);
+//   useEffect(() => {
+//     fetchUploads();
+//     const intervalId = setInterval(fetchUploads, 5000); // Refresh list every 5 seconds
+//     return () => clearInterval(intervalId);
+//   }, [fetchUploads]);
+
+    useEffect(() => {
+        fetchUploads();
+    }, []);
 
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 const API_URL = 'http://localhost:8000';
 
@@ -13,7 +13,7 @@ const DetailPage = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/v1/uploads/${uploadId}`);
+        const response = await api.get(`${API_URL}/api/v1/uploads/${uploadId}`);
         setUpload(response.data);
       } catch (err) {
         setError('Failed to fetch upload details.');
