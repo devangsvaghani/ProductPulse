@@ -1,42 +1,58 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem('authToken'));
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    
+    const checkUser = async () => {
+      try {
+        const response = await api.get('/api/v1/users/me');
+        setUser(response.data);
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkUser();
+  }, []);
 
   const login = async (email, password) => {
-    // Note: FastAPI's OAuth2PasswordRequestForm expects form data
     const formData = new URLSearchParams();
     formData.append('username', email);
     formData.append('password', password);
 
-    const response = await api.post('/api/v1/auth/token', formData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
+    await api.post('/api/v1/token', formData);
     
-    const { access_token } = response.data;
-    localStorage.setItem('authToken', access_token);
-    setToken(access_token);
+    const response = await api.get('/api/v1/users/me');
+    setUser(response.data);
   };
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    setToken(null);
+  const logout = async () => {
+    await api.post('/api/v1/logout');
+    setUser(null);
   };
 
   const value = {
-    token,
-    isAuthenticated: !!token,
+    user,
+    isAuthenticated: !!user,
+    loading,
     login,
     logout,
   };
 
+  if (loading) {
+    return <div>Loading...</div>; 
+  }
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to easily use the auth context
 export const useAuth = () => {
   return useContext(AuthContext);
 };
