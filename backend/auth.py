@@ -51,3 +51,12 @@ def get_current_user(access_token: Optional[str] = Cookie(None), db: Session = D
     if user is None:
         raise credentials_exception
     return user
+
+def get_current_admin_user(current_user: models.User = Depends(get_current_user)):
+    # Check if the user is an admin
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource."
+        )
+    return current_user

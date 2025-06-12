@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, Integer, String, Text, DateTime, Float, ForeignKey, func
+from sqlalchemy import JSON, Column, Integer, String, Text, DateTime, Float, ForeignKey, func, Boolean
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
@@ -10,7 +10,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     nickname = Column(String)
     hashed_password = Column(String, nullable=False)
-
+    is_admin = Column(Boolean, default=False, nullable=False)
     uploads = relationship("Upload", back_populates="owner")
 
 

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from database.session import engine
 from database.models import Base
-from api.v1 import uploads, auth
+from api.v1 import uploads, auth, admin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +28,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
 app.include_router(uploads.router, prefix="/api/v1/uploads", tags=["uploads"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
 @app.get("/")
 def read_root():
