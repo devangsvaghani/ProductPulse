@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, Integer, String, Text, DateTime, Float, ForeignKey, func, Boolean
+from sqlalchemy import JSON, Column, Integer, String, Text, DateTime, Float, ForeignKey, UniqueConstraint, func, Boolean
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
@@ -26,6 +26,8 @@ class Upload(Base):
     owner = relationship("User", back_populates="uploads")
     
     results = relationship("AnalysisResult", back_populates="upload", cascade="all, delete-orphan")
+
+    __table_args__ = (UniqueConstraint('user_id', 'filename', name='_user_filename_uc'),)
 
 
 class AnalysisResult(Base):

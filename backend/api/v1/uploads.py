@@ -7,12 +7,39 @@ from database import models
 from database.session import get_db
 from schemas import analysis as schemas
 from auth import get_current_user
+import re
 
 router = APIRouter()
 
 @router.post("/presigned-url", response_model=schemas.PresignedUrlResponse)
-def create_presigned_url(filename: str, current_user: models.User = Depends(get_current_user)):
+def create_presigned_url(filename: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     # Generates a presigned URL for uploading a file to S3
+
+    # check if the filename is valid
+    if re.search(r"[^a-zA-Z0-9._-]", filename):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid filename. Please use only letters, numbers, dots, underscores, and hyphens."
+        )
+
+    # Check if the file is a CSV
+    if not filename.lower().endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Invalid file type. Only .csv files are allowed.")
+    
+    # Check for uniqueness for this user
+    existing_upload = db.query(models.Upload).filter(
+        models.Upload.user_id == current_user.id,
+        models.Upload.filename == filename
+    ).first()
+
+    if existing_upload:
+        raise HTTPException(
+            status_code=409,
+            detail=f"A file with the name '{filename}' has already been uploaded by you. Please use a different name."
+        )
+    
+
+
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,

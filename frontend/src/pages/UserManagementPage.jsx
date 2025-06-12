@@ -119,7 +119,7 @@ const UserFormModal = ({ user, onClose, onSave }) => {
                         <button
                             type="submit"
                             className="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 flex items-center justify-center w-24"
-                            disabled={isSaving} 
+                            disabled={isSaving}
                         >
                             {isSaving ? <Spinner /> : "Save"}
                         </button>

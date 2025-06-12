@@ -64,6 +64,11 @@ def process_feedback_file(filepath: str) -> Optional[List[dict]]:
 
     try:
         df = pd.read_csv(filepath, engine='python', on_bad_lines='skip')
+
+        if "Review Text" not in df.columns:
+            print("Error: 'Review Text' column not found in the CSV file.")
+            raise ValueError("Required column 'Review Text' is missing from the input file.")
+
         df['cleaned_feedback'] = df['Review Text'].apply(clean_text)
         df.reset_index(inplace=True); df.rename(columns={'index': 'doc_id'}, inplace=True)
         

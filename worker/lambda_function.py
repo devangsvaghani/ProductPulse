@@ -1,4 +1,5 @@
 import json
+import re
 import boto3
 import os
 import urllib.parse
@@ -42,20 +43,33 @@ def lambda_handler(event, context):
         bucket_name = s3_record['s3']['bucket']['name']
         file_key = urllib.parse.unquote_plus(s3_record['s3']['object']['key'])
 
-        actual_filename = file_key
         try:
             user_id_str, actual_filename = file_key.split('/', 1)
             user_id = int(user_id_str)
         except (ValueError, IndexError):
             print(f"ERROR: Could not parse user_id from S3 key: {file_key}")
-            continue
+            return {'statusCode': 400, 'body': json.dumps('Invalid S3 key format')}
+        
+        if re.search(r"[^a-zA-Z0-9._-]", actual_filename):
+            print(f"ERROR: Invalid filename '{actual_filename}' in S3 key: {file_key}")
+            return {'statusCode': 400, 'body': json.dumps('Invalid filename format')}
 
+        db = SessionLocal()
+        existing_upload = db.query(Upload).filter(
+            Upload.user_id == user_id,
+            Upload.filename == actual_filename
+        ).first()
+
+        if existing_upload:
+            print(f"Upload record already exists for user {user_id} with filename {actual_filename}. Skipping processing.")
+            db.close()
+            return {'statusCode': 200, 'body': json.dumps('Upload already processed')}
+    
         print(f"Processing file: {file_key} from bucket: {bucket_name}")
 
         download_path = f'/tmp/{os.path.basename(file_key)}'
         s3_client.download_file(bucket_name, file_key, download_path)
         
-        db = SessionLocal()
         upload_record = None
         try:
             upload_record = Upload(filename=actual_filename, status='processing', user_id=user_id)
