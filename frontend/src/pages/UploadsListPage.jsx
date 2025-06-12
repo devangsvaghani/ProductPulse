@@ -3,45 +3,51 @@ import api from '../services/api';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import { Link } from 'react-router-dom';
-
-const API_URL = 'http://localhost:8000';
+import toast from 'react-hot-toast';
 
 const FileUpload = ({ onUploadSuccess }) => {
-  const [status, setStatus] = useState('idle');
+  const [isUploading, setIsUploading] = useState(false);
 
-  const onDrop = useCallback(async (acceptedFiles) => {
+    const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    setStatus('uploading');
+    setIsUploading(true);
+    
+    const uploadPromise = async () => {
+        const presignedUrlResponse = await api.post(`/api/v1/uploads/presigned-url?filename=${file.name}`);
+        const { url, fields } = presignedUrlResponse.data;
+
+        const formData = new FormData();
+        Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
+        formData.append('file', file);
+
+        await axios.post(url, formData);
+    };
+
     try {
-      const presignedUrlResponse = await api.post(`${API_URL}/api/v1/uploads/presigned-url?filename=${file.name}`);
-      const { url, fields } = presignedUrlResponse.data;
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
-      formData.append('file', file);
-
-      await axios.post(url, formData);
-      setStatus('success');
-      setTimeout(() => onUploadSuccess(), 1000); // Trigger refresh after 1 sec
+        await toast.promise(uploadPromise(), {
+            loading: 'Uploading file...',
+            success: 'Upload successful! Processing has started.',
+            error: 'Upload failed. Please try again.',
+        });
+        setTimeout(() => onUploadSuccess(), 1000);
     } catch (err) {
-      console.error(err);
-      setStatus('error');
+        console.error(err);
+    } finally {
+        setIsUploading(false);
     }
   }, [onUploadSuccess]);
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: { 'text/csv': ['.csv'] }, maxFiles: 1 });
+  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: { 'text/csv': ['.csv'] }, maxFiles: 1, disabled: isUploading });
 
   return (
     <div className="mb-8 p-6 bg-white rounded-lg shadow">
       <h2 className="text-lg font-medium text-gray-900 mb-4">Upload New Feedback File</h2>
       <div {...getRootProps()} className="p-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
         <input {...getInputProps()} />
-        {status === 'uploading' ? <p>Uploading...</p> : <p>Drag 'n' drop a CSV file here, or click to select</p>}
+        {isUploading ? <p>Uploading...</p> : <p>Drag 'n' drop a CSV file here, or click to select</p>}
       </div>
-      {status === 'success' && <p className="text-green-600 text-center mt-2">Upload successful! Processing has started.</p>}
-      {status === 'error' && <p className="text-red-600 text-center mt-2">Upload failed. Please try again.</p>}
     </div>
   );
 };
@@ -51,10 +57,9 @@ const UploadsListPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchUploads = useCallback(async () => {
-    // Only set loading true on the first fetch
     if (uploads.length === 0) setIsLoading(true);
     try {
-      const response = await api.get(`${API_URL}/api/v1/uploads/`);
+      const response = await api.get('/api/v1/uploads/');
       setUploads(response.data);
     } catch (error) {
       console.error("Failed to fetch uploads", error);
@@ -63,15 +68,21 @@ const UploadsListPage = () => {
     }
   }, [uploads.length]);
 
-//   useEffect(() => {
-//     fetchUploads();
-//     const intervalId = setInterval(fetchUploads, 5000); // Refresh list every 5 seconds
-//     return () => clearInterval(intervalId);
-//   }, [fetchUploads]);
-
     useEffect(() => {
         fetchUploads();
     }, []);
+
+    const SkeletonRow = () => (
+    <li className="px-4 py-4 sm:px-6">
+      <div className="animate-pulse flex space-x-4">
+        <div className="flex-1 space-y-3 py-1">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+        </div>
+        <div className="h-5 bg-gray-200 rounded w-20"></div>
+      </div>
+    </li>
+  );
 
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -81,7 +92,13 @@ const UploadsListPage = () => {
           <h2 className="text-lg leading-6 font-medium text-gray-900">Upload History</h2>
         </div>
         <ul role="list" className="divide-y divide-gray-200">
-          {uploads.map((upload) => (
+          {isLoading && uploads.length === 0 ? (
+            <>
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </>
+          ) : (uploads.map((upload) => (
             <li key={upload.id}>
               <Link to={`/upload/${upload.id}`} className="block hover:bg-gray-50">
                 <div className="px-4 py-4 sm:px-6">
@@ -102,7 +119,7 @@ const UploadsListPage = () => {
                 </div>
               </Link>
             </li>
-          ))}
+          )))}
         </ul>
         {isLoading && uploads.length === 0 && <p className="text-center p-4 text-gray-500">Loading uploads...</p>}
         {!isLoading && uploads.length === 0 && <p className="text-center p-4 text-gray-500">No uploads found. Upload a file to get started.</p>}

@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import UserManagementPage from './pages/UserManagementPage';
+import { Toaster } from 'react-hot-toast';
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -35,6 +36,7 @@ const Header = () => {
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-center" reverseOrder={false} /> 
       <Router>
         <AppContent />
       </Router>
