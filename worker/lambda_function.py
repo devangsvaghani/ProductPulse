@@ -38,8 +38,23 @@ def lambda_handler(event, context):
     
     for record in event['Records']:
         sqs_body_str = record['body']
-        s3_event_data = json.loads(sqs_body_str)
+
+        try:
+            s3_event_data = json.loads(sqs_body_str)
+        except json.JSONDecodeError:
+            print(f"WARNING: Received non-JSON message body from SQS, skipping: {sqs_body_str}")
+            return {'statusCode': 400, 'body': json.dumps('Invalid SQS message format')}
+
+        if 'Records' not in s3_event_data or not isinstance(s3_event_data.get('Records'), list) or not s3_event_data.get('Records'):
+            print(f"WARNING: Received SQS message that is not a valid S3 event notification, skipping: {s3_event_data}")
+            return {'statusCode': 400, 'body': json.dumps('Invalid S3 event format')}
+
         s3_record = s3_event_data['Records'][0]
+
+        if 's3' not in s3_record or 'bucket' not in s3_record.get('s3', {}) or 'object' not in s3_record.get('s3', {}):
+            print(f"WARNING: S3 event record is missing critical keys, skipping: {s3_record}")
+            return {'statusCode': 400, 'body': json.dumps('Invalid S3 event record format')}
+        
         bucket_name = s3_record['s3']['bucket']['name']
         file_key = urllib.parse.unquote_plus(s3_record['s3']['object']['key'])
 
