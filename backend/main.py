@@ -1,19 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import logging
 
 from database.session import engine
 from database.models import Base
 from api.v1 import uploads, auth, admin
+from core.logging_config import setup_logging
+
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # This function runs on application startup and shutdown
-    print("Application startup...")
+    setup_logging()
+    logger.info("Application startup...")
     Base.metadata.create_all(bind=engine)
-    print("Database tables checked/created.")
+    logger.info("Database tables checked/created.")
     yield # The application runs while the server is active
-    print("Application shutdown.")
+    logger.info("Application shutdown.")
 
 
 app = FastAPI(title="ProductPulse API", lifespan=lifespan)

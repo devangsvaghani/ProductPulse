@@ -10,6 +10,12 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import openai
 from dotenv import load_dotenv
 
+import logging
+from logging_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 # Configure client for openrouter.ai
@@ -60,13 +66,13 @@ def get_ai_summary(feedback_list: List[str], topic_keywords: str) -> str:
 def process_feedback_file(filepath: str) -> Optional[List[dict]]:
     # This funciton gets file and does the AI analysis
 
-    print(f"--- Starting AI Analysis on {filepath} ---")
+    logger.info(f"--- Starting AI Analysis on {filepath} ---")
 
     try:
         df = pd.read_csv(filepath, engine='python', on_bad_lines='skip')
 
         if "Review Text" not in df.columns:
-            print("Error: 'Review Text' column not found in the CSV file.")
+            logger.error("Required column 'Review Text' is missing from the input file.")
             raise ValueError("Required column 'Review Text' is missing from the input file.")
 
         df['cleaned_feedback'] = df['Review Text'].apply(clean_text)
@@ -75,17 +81,17 @@ def process_feedback_file(filepath: str) -> Optional[List[dict]]:
         modeling_df = df[df['cleaned_feedback'] != ''].copy()
         if modeling_df.empty: return []
 
-        print("Vectorizing text...")
+        logger.info("Vectorizing text...")
         vectorizer = CountVectorizer(max_df=0.9, min_df=5, stop_words='english')
         text_counts = vectorizer.fit_transform(modeling_df['cleaned_feedback'])
         
         # For now we fixed the topic count to 7
         n_topics = 7
-        print(f"Identifying {n_topics} topics with LDA...")
+        logger.info(f"Identifying {n_topics} topics with LDA...")
         lda = LatentDirichletAllocation(n_components=n_topics, random_state=42)
         modeling_df['topic_id'] = lda.fit_transform(text_counts).argmax(axis=1)
 
-        print("Analyzing topics, sentiment, and generating summaries with OpenRouter...")
+        logger.info("Analyzing topics, sentiment, and generating summaries with OpenRouter...")
 
         final_results = []
         feature_names = vectorizer.get_feature_names_out()
@@ -120,9 +126,9 @@ def process_feedback_file(filepath: str) -> Optional[List[dict]]:
             }
             final_results.append(topic_result)
         
-        print("\n--- AI Analysis Complete ---")
+        logger.info("--- AI Analysis Complete ---")
 
         return final_results
     except Exception as e:
-        print(f"An unexpected error occurred in worker: {e}")
+        logger.error(f"An unexpected error occurred in worker: {e}")
         return None

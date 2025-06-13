@@ -3,7 +3,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
-# Load environment variables from a .env file ( for local testing)
 load_dotenv()
 
 DB_USERNAME = os.getenv("DB_USERNAME")
