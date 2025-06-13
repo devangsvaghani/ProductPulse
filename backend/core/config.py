@@ -1,3 +1,5 @@
+from typing import List, Union
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -15,8 +17,18 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     ENVIRONMENT: str = "development"
+    CORS_ORIGINS: Union[str, List[str]] = ""
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    def parse_cors_origins(cls, v):
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(",") if item.strip()]
+        if isinstance(v, list):
+            return v
+        return []
 
     class Config:
         env_file = ".env"
+        env_file_encoding = 'utf-8' 
 
 settings = Settings()
