@@ -1,3 +1,5 @@
+# For first-time user (Admin) creation
+
 from passlib.context import CryptContext
 from database.session import SessionLocal, engine
 from database.models import User, Base
@@ -36,7 +38,6 @@ def create_user(nickname, email, password, is_admin: bool = False):
         db.close()
 
 if __name__ == "__main__":
-    # Ensure tables and configure admin via logging
     logger.info("Making sure database tables exist...")
     Base.metadata.create_all(bind=engine)
     logger.info("Configuring admin user...")

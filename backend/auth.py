@@ -21,6 +21,7 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
+# create j JWT token
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -31,6 +32,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
+# get the current user from the access token
 def get_current_user(access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,8 +54,9 @@ def get_current_user(access_token: Optional[str] = Cookie(None), db: Session = D
         raise credentials_exception
     return user
 
+# check if the user is an admin
 def get_current_admin_user(current_user: models.User = Depends(get_current_user)):
-    # Check if the user is an admin
+    
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -11,9 +11,9 @@ import re
 
 router = APIRouter()
 
+# generates a presigned URL for uploading a file to S3
 @router.post("/presigned-url", response_model=schemas.PresignedUrlResponse)
 def create_presigned_url(filename: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    # Generates a presigned URL for uploading a file to S3
 
     # check if the filename is valid
     if re.search(r"[^a-zA-Z0-9._-]", filename):
@@ -39,7 +39,6 @@ def create_presigned_url(filename: str, db: Session = Depends(get_db), current_u
         )
     
 
-
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -58,18 +57,20 @@ def create_presigned_url(filename: str, db: Session = Depends(get_db), current_u
                 {"acl": "private"},
                 {"Content-Type": "text/csv"}
             ],
-            ExpiresIn=3600  # URL expires in 1 hour
+            ExpiresIn=3600  
         )
         return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Could not generate presigned URL: {e}")
 
+# fetch all the uploaded files for current user
 @router.get("/", response_model=List[schemas.UploadInfo])
 def get_all_uploads(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
 
     all_uploads = db.query(models.Upload).filter(models.Upload.user_id == current_user.id).order_by(models.Upload.created_at.desc()).all()
     return all_uploads
 
+# fetch the results of a specific upload by its id
 @router.get("/{upload_id}", response_model=schemas.UploadResponse)
 def get_upload_results(upload_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
 

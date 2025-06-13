@@ -13,10 +13,12 @@ router = APIRouter()
 
 PROTECTED = [Depends(get_current_admin_user)]
 
+# fetch all users
 @router.get("/users", response_model=List[UserSchema], dependencies=PROTECTED)
 def get_all_users(db: Session = Depends(get_db)):
     return db.query(models.User).all()
 
+# create a new user
 @router.post("/users", response_model=UserSchema, status_code=status.HTTP_201_CREATED, dependencies=PROTECTED)
 def create_new_user(user: admin_schemas.UserCreate, db: Session = Depends(get_db)):
 
@@ -36,6 +38,7 @@ def create_new_user(user: admin_schemas.UserCreate, db: Session = Depends(get_db
     db.refresh(new_user)
     return new_user
 
+# update user having user_id
 @router.put("/users/{user_id}", response_model=UserSchema, dependencies=PROTECTED)
 def update_existing_user(user_id: int, user_update: admin_schemas.UserUpdate, db: Session = Depends(get_db)):
 
@@ -51,6 +54,7 @@ def update_existing_user(user_id: int, user_update: admin_schemas.UserUpdate, db
     db.refresh(db_user)
     return db_user
 
+# delete user having user_id
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=PROTECTED)
 def delete_existing_user(user_id: int, db: Session = Depends(get_db)):
 
@@ -62,6 +66,7 @@ def delete_existing_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
     return
 
+# get all analytics data
 @router.get("/analytics", response_model=admin_schemas.AnalyticsData, dependencies=PROTECTED)
 def get_platform_analytics(db: Session = Depends(get_db)):
     

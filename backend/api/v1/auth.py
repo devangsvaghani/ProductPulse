@@ -11,6 +11,7 @@ from auth import create_access_token, verify_password, get_current_user
 
 router = APIRouter()
 
+# endpoint for user login
 @router.post("/token")
 def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
@@ -35,12 +36,13 @@ def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestF
     )
     return {"msg": "Login successful"}
 
+# logout user
 @router.post("/logout")
 def logout(response: Response):
     response.delete_cookie("access_token")
     return {"msg": "Logout successful"}
 
-
+# get the current user details
 @router.get("/users/me", response_model=schemas.User)
 def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user

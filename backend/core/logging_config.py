@@ -2,8 +2,7 @@ import logging
 import sys
 
 def setup_logging():
-    # Configures the logging for the backend application
-
+    # configures the logging
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     
     logger = logging.getLogger()
