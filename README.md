@@ -5,7 +5,7 @@ ProductPulse is a full-stack, multi-tenant web application designed to empower b
 ## **🚀 Live Demo**
 
 * **Frontend Application:** https://main.d1d3jiir25gjvh.amplifyapp.com/ 
-* **Backend API:** https://api.devangsvaghani.com 
+* **Backend API:** https://api.devangsvaghani.me 
 
 ## **✨ Key Features**
 
