@@ -31,8 +31,8 @@ def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestF
         value=access_token,
         httponly=True,
         max_age=86400,
-        samesite='lax',
-        secure=settings.ENVIRONMENT != "development"
+        samesite='none',
+        secure=True
     )
     return {"msg": "Login successful"}
 
