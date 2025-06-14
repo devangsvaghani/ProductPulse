@@ -21,17 +21,19 @@ ProductPulse is a full-stack, multi-tenant web application designed to empower b
 
 ProductPulse is built on a scalable, event-driven architecture designed to decouple the user-facing web services from the intensive backend processing. This ensures high availability and resilience.
 
-graph TD  
-    A\[User's Browser\] \--\>|HTTPS Request| B(AWS Amplify \- React Frontend);  
-    B \--\>|API Calls (HTTPS)| C(Nginx Reverse Proxy on EC2);  
-    C \--\>|Forwards Request| D(FastAPI Backend in Docker on EC2);  
-    D \--\>|Auth & Queries| E(AWS RDS \- PostgreSQL);  
-    B \--\>|Direct Upload (Presigned URL)| F(AWS S3 Bucket);  
-    F \--\>|Object Create Event| G(AWS SQS Queue);  
-    G \--\>|Triggers| H(AWS Lambda Worker);  
-    H \--\>|Reads File| F;  
-    H \--\>|AI Processing| I{3rd Party AI API & Libraries};  
-    H \--\>|Writes Results| E;
+```mermaid
+graph TD
+    A[User's Browser] -->|HTTPS Request| B[AWS Amplify - React Frontend]
+    B -->|API Calls over HTTPS| C[Nginx Reverse Proxy on EC2]
+    C -->|Forwards Request| D[FastAPI Backend in Docker on EC2]
+    D -->|Auth and DB Queries| E[AWS RDS - PostgreSQL]
+    B -->|Direct Upload using Presigned URL| F[AWS S3 Bucket]
+    F -->|Object Created Event| G[AWS SQS Queue]
+    G -->|Triggers Lambda| H[AWS Lambda Worker]
+    H -->|Reads File| F
+    H -->|AI Processing| I[3rd Party AI API and Libraries]
+    H -->|Writes Results| E
+```
 
 **Workflow Explanation:**
 
@@ -67,47 +69,56 @@ To run this project on your local machine, please follow these steps.
 
 ### **1\. Clone the Repository**
 
-git clone https://github.com/devangsvaghani/ProductPulse.git
+`git clone https://github.com/devangsvaghani/ProductPulse.git`
 
-cd ProductPulse
+`cd ProductPulse`
 
 ### **2\. Backend Setup**
 
 1. **Navigate to the backend directory:**  
-   cd backend
+   `cd backend`
 
 2. **Create a Python virtual environment and activate it:**  
-   python3 \-m venv .venv  
-   source .venv/bin/activate (for mac)
+   `python3 \-m venv .venv`
+   
+   `source .venv/bin/activate` (for mac)
 
-   .\\.venv\Scripts\activate (for windows)
+   `.\.venv\Scripts\activate` (for windows)
 
-3. **Install dependencies:**  
-   pip install \-r requirements.txt
+4. **Install dependencies:**  
+   `pip install \-r requirements.txt`
 
-4. **Configure Environment Variables:**  
-   * Create a .env file.  
+5. **Configure Environment Variables:**  
+   * Create a `.env` file.  
    * Fill in the file with all your credentials (Database URI, AWS keys, JWT Secret, etc.)
 
-5. **Run the Backend Server:**  
-   uvicorn main:app \--reload
+6. **Run the Backend Server:**  
+   `uvicorn main:app --reload`
 
    The API will be available at http://localhost:8000.
 
 ### **3\. Frontend Setup**
 
 1. **Navigate to the frontend directory (in a new terminal):**  
-   cd frontend
+   `cd frontend`
 
 2. **Install dependencies:**  
-   npm install
+   `npm install`
 
 3. **Configure Environment Variables:**  
-   * Create a .env file in the frontend root.  
+   * Create a `.env` file in the frontend root.  
    * Add the following line:  
-     VITE\_API\_BASE\_URL=http://localhost:8000
+     `VITE_API_BASE_URL=http://localhost:8000`
 
 4. **Run the Frontend Development Server:**  
-   npm run dev
+   `npm run dev`
 
    The application will be available at http://localhost:5173.
+
+### **4\. Deployment**
+
+This application is designed for a full cloud deployment on AWS:
+
+* **Frontend:** The React app is deployed using **AWS Amplify**, which connects to the GitHub repository for continuous deployment and hosts the site on a global CDN.
+* **Backend:** The FastAPI application is containerized with **Docker** and deployed on an **Amazon EC2** `t3.micro` instance. **Nginx** is used as a reverse proxy to handle incoming traffic.
+* **Worker:** The AI processing script is deployed as a containerized **AWS Lambda function**, triggered by **SQS**.
