@@ -2,11 +2,6 @@
 
 ProductPulse is a full-stack, multi-tenant web application designed to empower businesses by transforming raw customer feedback into actionable insights. It leverages a modern, event-driven architecture and AI to automate the process of topic modeling, summarization, and sentiment analysis from large CSV datasets.
 
-## **🚀 Live Demo**
-
-* **Frontend Application:** https://main.d1d3jiir25gjvh.amplifyapp.com/ 
-* **Backend API:** https://api.devangsvaghani.me 
-
 ## **✨ Key Features**
 
 * **Secure Multi-Tenant Authentication**: Robust login system with HttpOnly cookie-based JWT authentication and distinct roles for regular users and administrators.  
